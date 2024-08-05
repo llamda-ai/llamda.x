@@ -1,0 +1,45 @@
+API Reference
+*************
+
+Llamda is a Python library for transforming Python functions into LLM
+function calls.
+
+class llamda_fn.Llamda(system_message: str | None = None, **kwargs: Any)
+
+   Bases: "object"
+
+   Llamda class to create, decorate, and run Llamda functions.
+
+   fy(*args: Any, **kwargs: Any) -> Callable[[...], Any]
+
+      Decorator method to create a Llamda function.
+
+   run(tool_names: List[str] | None = None, exchange: Exchange | None = None, llm_name: str | None = None) -> LLMessage
+
+      Run the OpenAI API with the prepared data.
+
+   send_message(message: str) -> LLMessage
+
+      Send a message and get a response.
+
+   property tools: Sequence[ChatCompletionToolParam]
+
+      Get the tools available to the Llamda instance.
+
+class llamda_fn.LlamdaFunctions
+
+   Bases: "object"
+
+   execute_function(tool_call: LlToolCall) -> ToolResponse
+
+      Executes the function specified in the tool call with the
+      required arguments
+
+   get(names: List[str] | None = None) -> Sequence[ChatCompletionToolParam]
+
+      Returns the tool spec for some or all of the functions in the
+      registry
+
+   llamdafy(name: str | None = None, description: str | None = None) -> Callable[[Callable[[P], R]], LlamdaCallable[R]]
+
+   property tools: Dict[str, LlamdaCallable[Any]]
