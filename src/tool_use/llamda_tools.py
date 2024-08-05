@@ -6,30 +6,22 @@ and generation of OpenAI-compatible tool specifications.
 """
 
 import json
-from inspect import Parameter, Signature, isclass, signature
 from typing import (
     Any,
-    Callable,
     Dict,
     Iterator,
     List,
     Optional,
-    ParamSpec,
     Sequence,
-    TypeVar,
 )
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from ..llms.ll_tool import LLToolResponse
 from ..llms.oai_api_types import OaiToolCall, OaiToolSpec
 
 from .llamda_callable import LlamdaBase, LlamdaCallable
-from .llamda_function import LlamdaFunction
-from .llamda_pydantic import LlamdaPydantic
 
-R = TypeVar("R")
-P = ParamSpec("P")
 
 __all__ = ["LlamdaTools"]
 
@@ -61,62 +53,12 @@ class LlamdaTools:
         """
         return self._tools
 
-    def llamdafy(
-        self,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-    ) -> Callable[[Callable[P, R]], LlamdaBase[R]]:
-        """
-        A decorator to convert a regular function into a Llamda function.
+    @tools.setter
+    def set_tools(self, tools: Dict[str, LlamdaBase[Any]]) -> None:
+        self._tools = tools
 
-        This method analyzes the function signature and creates either a LlamdaPydantic
-        or LlamdaFunction instance based on the input parameters.
-
-        Args:
-            name: Optional custom name for the Llamda function.
-            description: Optional description for the Llamda function.
-
-        Returns:
-            A decorator that converts the function into a LlamdaCallable.
-        """
-
-        def decorator(func: Callable[P, R]) -> LlamdaBase[R]:
-            func_name: str = name or func.__name__
-            func_description: str = description or func.__doc__ or ""
-
-            sig: Signature = signature(func)
-            if len(sig.parameters) == 1:
-                param: Parameter = next(iter(sig.parameters.values()))
-                if isclass(param.annotation) and issubclass(
-                    param.annotation, BaseModel
-                ):
-                    llamda_func = LlamdaPydantic.create(
-                        call_func=func,
-                        name=func_name,
-                        description=func_description,
-                        model=param.annotation,
-                    )
-                    self._tools[func_name] = llamda_func
-                    return llamda_func
-
-            fields: Dict[str, tuple[type, Any]] = {
-                param_name: (
-                    param.annotation if param.annotation != Parameter.empty else Any,
-                    param.default if param.default != Parameter.empty else ...,
-                )
-                for param_name, param in sig.parameters.items()
-            }
-
-            llamda_func: LlamdaCallable[R] = LlamdaFunction.create(
-                call_func=func,
-                fields=fields,
-                name=func_name,
-                description=func_description,
-            )
-            self._tools[func_name] = llamda_func
-            return llamda_func
-
-        return decorator
+    def add_tool(self, tool: LlamdaBase[Any]) -> None:
+        self._tools[tool.name] = tool
 
     @property
     def spec(self) -> Sequence[OaiToolSpec]:

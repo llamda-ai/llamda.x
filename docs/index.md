@@ -18,16 +18,10 @@ Here's a simple example of how to use Llamda:
 from llamda_fn import Llamda
 from typing import List
 
-llamda = Llamda()
-
-@llamda.llamdafy()
+@llamda.fy()
 def greet(name: str, times: int = 1) -> str:
     """Greet a person multiple times."""
     return f"Hello, {name}! " * times
-
-# Use the function
-result = greet("Alice", 3)
-print(result)  # Output: Hello, Alice! Hello, Alice! Hello, Alice!
 
 # Get the JSON schema
 schema = llamda.tools["greet"].to_schema()

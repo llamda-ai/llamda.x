@@ -26,7 +26,6 @@ def aq(input_string: str) -> int:
     return digits + letters
 
 
-
 def aq_multiple(input_strings: List[str]) -> List[Tuple[str, int]]:
     """
     Calculate the Alphanumeric Quabala (AQ) value for multiple strings.
